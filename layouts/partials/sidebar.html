@@ -1,6 +1,13 @@
 {{ $s := site.Params }}
 <aside class="sidebar">
   <section class="sidebar_inner">
+    <br>
+    {{ partialCached "search/widget" . }}
+    {{- $introDescription := $s.introDescription }}
+    {{- with .Params.introDescription }}
+      {{- $introDescription = . }}
+    {{- end }}
+    {{- if $introDescription }}
       {{- $author := $s.Author  }}
       {{- $showAuthorPhoto := false }}
       {{- $fullAuthor := reflect.IsMap $author }}
@@ -24,6 +31,14 @@
       {{- $r := T "read_more" }}
       <a href='{{ absLangURL (default "about/" $s.introURL) }}' class="button mt-1" role="button" title='{{ $r }}'>{{ $r }}</a>
       {{- end }}
+    {{- end }}
+
+    {{ if .Site.Params.sidebardisclaimer }}
+      <div class="sidebardisclaimer"> 
+        <h2 class="mt-4">Disclaimer</h2> 
+        {{ .Site.Params.disclaimerText }}
+      </div> 
+    {{ end }}  
 
     {{- $relatedInSidebar := true }}
     {{- if eq $s.showRelatedInSidebar false }}

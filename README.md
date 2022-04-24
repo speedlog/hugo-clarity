@@ -46,15 +46,19 @@ A technology-minded theme for Hugo based on VMware's open-source [Clarity Design
   * [Table of contents](#table-of-contents-1)
   * [Notices](#notices)
   * [Custom CSS and JS](#custom-css-and-js)
+  * [Custom Site Disclaimer](#site-disclaimer)
   * [Forcing light or dark mode](#forcing-light-or-dark-mode)
   * [Internationalization - I18N](#i18n)
   * [Hooks](#hooks)
   * [Comments](#comments)
   * [Math notation](#math-notation)
+  * [Search](#search)
 
 ## Features
 
 * Blog with tagging and category options
+
+* Search
 
 * Deeplinks
 
@@ -67,6 +71,8 @@ A technology-minded theme for Hugo based on VMware's open-source [Clarity Design
 * Dark Mode (with UI controls for user preference setting)
 
 * Toggleable table of contents
+
+* Configurable Site Disclaimer (i.e. "my views are not my employer's")
 
 * Flexible image configuration, and support for modern formats like WebP
 
@@ -178,6 +184,8 @@ These options set global values that some pages or all pages in the site use by 
 | plausible_analytics        | boolean                     | no                  |
 | matomo_analytics           | boolean                     | no                  |
 | description                | string                      | yes                 |
+| keywords                   | array of strings            | yes                 |
+| introDescription           | string                      | yes                 |
 | introURL                   | string/false                | no                  |
 | numberOfTagsShown          | integer                     | no                  |
 | usePageBundles             | boolean                     | yes                 |
@@ -209,6 +217,7 @@ These options set global values that some pages or all pages in the site use by 
 | showRelatedInArticle       | boolean                     | yes                 |
 | showRelatedInSidebar       | boolean                     | no                  |
 | footerLogo                 | string                      | N/A                 |
+| enableSearch               | boolean                     | N/A                 |
 
 ### Page Parameters
 
@@ -219,6 +228,8 @@ These options can be set from a page [frontmatter](https://gohugo.io/content-man
 | title                | string             | N/A              |
 | date                 | date               | N/A              |
 | description          | string             | N/A              |
+| keywords             | array of strings   | yes              |
+| introDescription     | string             | yes              |
 | abstract             | string             | N/A              |
 | summary              | string             | N/A              |
 | draft                | boolean            | N/A              |
@@ -544,6 +555,14 @@ If `codeMaxLines` is specified both in `config.toml` and in the article frontmat
 
 If `codeMaxLines` is not specified anywhere, an internal default value of `100` will be assumed.
 
+#### Line Highlighting
+
+It is possible to highlight specific lines in a code block by applying `{hl_lines=[7]}` after the fence and language. For example, the below snippet will highlight lines 7 and 8 in the code block to which it is applied.
+
+```
+```yaml {hl_lines=[7,8]}
+```
+
 ### Table of contents
 
 Each article can optionally have a table of contents (TOC) generated for it based on top-level links. By configuring the `toc` parameter in the article frontmatter and setting it to `true`, a TOC will be generated only for that article. The TOC will then render under the featured image.
@@ -613,6 +632,20 @@ This will be the content of the note.
 ```
 
 For more examples see the "Notices" page in the `exampleSite`.
+
+### Site Disclaimer
+
+ The theme includes the ability to put a Disclaimer on your website (e.g. "My views are my own and not my employer's").  Currently, the disclaimer displays in the sidebar under the author information.   You can enable and customize it as follows:
+
+ * Uncomment the `sidebardisclaimer` parameter in `config/_default/params.toml`.
+ * Uncomment and edit the `disclaimerText` parameter in `config/_default/params.toml`.
+ * Add and modify an override for the `div.sidebardisclaimer` selector in `assets/saas/_custom.sass`.
+
+ ```CSS
+div.sidebardisclaimer{padding: 0px 10px 15px 10px;margin: 20px 5px 20px 5px;border: 1px solid #eee;border-left-width: 10px;border-right-width: 10px;border-radius: 5px 5px 5px 5px;border-left-color: orange;border-right-color: orange;border-top-color:orange;border-bottom-color:orange}
+ ```
+
+ > The code for the sidebar disclaimer text is in `layouts/partials/sidebar.html`.  The default color scheme displays in both light and dark mode.   Additionally, the styling has been placed into `_custom.sass` so that it's easily editable with beginner's understanding of CSS properties and easier to find.
 
 ### Forcing light or dark mode
 
@@ -691,6 +724,20 @@ You can override these setting from each post individually. For example, you may
 
 > please use `comments` and not `comment`
 
+#### Utterances Commenting Support
+
+ If you wish use [Utterances](https://github.com/utterance/utterances) comments on your site, you'll need to perform the following:
+
+ * Ensure you have a GitHub public repository, which you've granted permissions to the [Utterances GitHub App](https://github.com/apps/utterances). 
+ * Comment out the line for `disqusShortname = ""` in the `/config/_default/config.toml` file.
+ * Set `comments = true` in the `/config/_default/params.toml` file.
+ * Configure the utterances parameters in the `/config/_default/params.toml` file.
+
+ Utterances is loaded in the `comments.html` partial by referring to the `utterances.html` partial.   Since `single.html` layout loads comments if comments are enabled, you must ensure *both* the `comments` and `utterances` parameters are configured.
+ 
+
+
+
 ### Math notation
 
 Clarity uses [KaTeX](https://katex.org/) for math type setting if `enableMathNotation` is set to `true` in global or page parameters (the latter takes precedence).
@@ -739,3 +786,34 @@ Related content within a `series` taxonomy can be shown at the end of a piece of
 The site configuration option `showRelatedInArticle` controls if this option is enabled. The same configuration option can be used in a posts frontmatter to disable the feature (but the site configuration overrides the per-page option).
 
 Likewise, the site configuration option `showRelatedInSidebar` controls if related content is shown on the sidebar. There is no corresponding option within a post to disable this.
+
+### Search
+
+Search is currently a BETA feature. Ensure you have these settings inside your configuration files:
+
+```toml
+# config/_default/config.toml
+[outputs]
+  home = ["HTML", "RSS","JSON"]
+```
+
+```toml
+# config/_default/params.toml
+enableSearch = true
+```
+
+[Compose](https://github.com/onweru/compose), from which this feature is derived, implements `fuse.js` to enable search functionality. At the time of this writing, search on this theme takes either of the following forms:
+
+1. __Passive search__
+
+    This occurs only when the user loads the search page i.e `/search/`. They can directly navigate to that url. Alternatively, the user can type the search query on the search field and hit enter. They will be redirected to the search page which will contain matched results if any.
+
+    Currently, this only works on the default language. Support for multilingual passive search is coming soon.
+
+2. __Live search__
+
+    This behavior will be obvious as the user types a search query on the search field. All valid search queries will yield a list of quick links or a simple "no matches found". Else, the user will be prompted to continue typing.
+
+    Live search works even for multilingual sites.
+
+    For Chinese-like languages, it may or may not work.
